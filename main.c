@@ -1,6 +1,17 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <pwd.h>
 
-int main(){
+void pUserDir(){
+    
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+    printf("\ %s", cwd);
+
+}
+void main(){
+    
+    pUserDir();
 
     return 0;
 }
