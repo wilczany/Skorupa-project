@@ -9,23 +9,34 @@
 #include <string.h>
 
 
-//reminder ze przekazane args[] ma konczyc sie NULLem
-int sProgramForeground(const char progName, char *const args[]){
-        int status = execvp(progName, args);
-        if(status == -1){
-            fprintf(stderr, "sProgramForeground: %s\n", strerror(errno));
+//reminder ze przekazane args[] ma zaczynac sie PROGRAMEM i konczyc sie NULLem
+//juz dziala
+int sProgramForeground(const char* progName, char *const args[]){
+        pid_t chpid = fork();
+        if(chpid < 0){
+            fprintf(stderr, "sProgramBackground, fork(): %s",strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        
+        else if(chpid == 0){
+            int status = execvp(progName, args);
+            if(status == -1){
+                fprintf(stderr, "sProgramBackground, execvp(...): %s\n", strerror(errno));
+            }
+            exit(EXIT_FAILURE);
         }
 
-        //debug v
-		printf("jak sie to wyswietli po ctrl+c? to wrocilo do naszej powloki");
-        //jak nie to trzeba bardziej przekminic
+        else if(chpid > 0){ 
+            wait(NULL); //to czeka na zakonczenie procesu dziecka bodajze 
+            return(0);
+        }
 
-        return(0);
-
+        return(-1); //tego returna nie chcemy
 }
 
-//reminder ze przekazane args[] ma konczyc sie NULLem
-int sProgramBackground(const char progName, char *const args[]){
+//reminder ze przekazane args[] ma zaczynac sie PROGRAMEM i konczyc sie NULLem
+//chyba dziala (y)
+int sProgramBackground(const char* progName, char *const args[]){
         pid_t chpid = fork();
         if(chpid < 0){
             fprintf(stderr, "sProgramBackground, fork(): %s",strerror(errno));
@@ -36,7 +47,7 @@ int sProgramBackground(const char progName, char *const args[]){
             if(status == -1){
                 fprintf(stderr, "sProgramBackground, execvp(...): %s\n", strerror(errno));
             }
-            abort();
+            exit(EXIT_FAILURE);
         } 
 
         return(0);

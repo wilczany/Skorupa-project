@@ -1,10 +1,13 @@
+OBJ = main.o fork.o
+
 all: prog
 
-prog: main.o
-	gcc -o skorupa main.o
+prog: $(OBJ)
+	gcc $(OBJ) -o prog
 
-main.o: main.c
-	gcc -c main.c -o main.o
+$(OBJ): fork.c
+
+.PHONY: clean
 
 clean:
-	rm -f *.o skorupa
+	rm -f *.o prog
