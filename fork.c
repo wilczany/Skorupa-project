@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "fork.h"
 
 //reminder ze przekazane args[] ma zaczynac sie PROGRAMEM i konczyc sie NULLem
 //juz dziala
