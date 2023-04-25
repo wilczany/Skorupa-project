@@ -16,22 +16,30 @@ void pUserDir(){
     
     char cwd[1024];
     getcwd(cwd, sizeof(cwd));
-    printf(" %s \n\n", cwd); 
+
+    printf(" %s>>", cwd); 
 	
 }
+
 int main(){
     char *const nullek[] = {NULL};
     char *const forkc[] = {"more", "fork.c", NULL};
     
-    char buf[32] = { 0 };
+    char *buf;
+    int count= 0;
     char** sep;
-    // CTRL + D wywala nieskończoną pentlę
-    while (buf[0] != 'q' ) {
+    const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
+    write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 11);
+
+    while (1) {
         pUserDir();
-        printf("ps\n");
-        printf("\n%i\n",sProgramForeground("ps", nullek));
-        fgets(buf, sizeof(buf), stdin); 
         
+        buf = readLine();
+        char **program = separate(buf);
+
+        sProgramForeground(program[0],program);
+        
+        // free(buf); przy wyjsciu z programu
     }
     
 
