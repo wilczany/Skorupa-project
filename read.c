@@ -9,7 +9,7 @@ char* readLine(){
     for (;;){
         int c = fgetc (stdin);
         if (c == '\n'){
-            buf[count++] = 0;
+            buf[count++] = '\0';
             break;
         }
         buf[count++] = (char)c;
@@ -18,16 +18,18 @@ char* readLine(){
     return buf;
 }
 
-char **separate(char *args){
+char **separate (char *args, int *count){
+
     char** result = malloc(sizeof(char*));
     char* piece = strtok(args, " ");
-    int i = 0;
+    
     while(piece != NULL){
-        result = realloc(result, (i+1) * sizeof(char*));
-        result[i] = piece;
+        result = realloc(result, ((*count)+1) * sizeof(char*));
+        result[(*count)] = piece;
         piece = strtok(NULL, " ");
-        i++;
+        (*count)++;
+        
     }
-    result[i]= 0;
+    result[(*count)]= 0;
     return result;
     }

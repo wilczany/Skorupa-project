@@ -3,12 +3,14 @@
 #include <pwd.h>
 
 #include "fork.h"
-#include "split.h"
+#include "read.h"
 
 
 #include <unistd.h>
+#include <string.h>
 
 
+const int MAX_SIZE = 512;
 
 
 
@@ -25,21 +27,30 @@ int main(){
     char *const nullek[] = {NULL};
     char *const forkc[] = {"more", "fork.c", NULL};
     
-    char *buf;
-    int count= 0;
+    char *buf = malloc(sizeof(char)*MAX_SIZE);
     char** sep;
     const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
     write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 11);
 
     while (1) {
         pUserDir();
-        
+        int arguments_count = 0;
         buf = readLine();
-        char **program = separate(buf);
+        char **program = separate(buf, &arguments_count);
+        if(strcmp(
+            program[arguments_count-1],
+            "&"))
+            {
+            sProgramForeground(program[0],program);
+            
+        }
+        else{
+            printf("%s",program[arguments_count-1]);
+            program[arguments_count-1] = '\0';
+            sProgramBackground(program[0],program);
+        }
 
-        sProgramForeground(program[0],program);
-        
-        // free(buf); przy wyjsciu z programu
+        free(buf); //przy wyjsciu z programu
     }
     
 

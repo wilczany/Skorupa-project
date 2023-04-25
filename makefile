@@ -1,4 +1,4 @@
-OBJ = main.o fork.o split.o
+OBJ = main.o fork.o read.o
 
 all: prog
 
