@@ -2,12 +2,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char* readLine(){
+char* readLine(int *status){
     char *buf= malloc(sizeof(char)*512);
     int count= 0;
     
     for (;;){
         int c = fgetc (stdin);
+        if(c == -1 && count == 0){
+            buf[count] = 'x';
+            *status = -1;
+            return buf;
+        }
         if (c == '\n'){
             buf[count++] = '\0';
             break;

@@ -20,6 +20,7 @@ int sProgramForeground(const char* progName, char *const args[]){
             int status = execvp(progName, args);
             if(status == -1){
                 fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
+                //nieznane/nieprawidlowe polecenie
             }
             exit(EXIT_FAILURE);
         }

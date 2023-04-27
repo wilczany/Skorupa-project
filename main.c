@@ -55,10 +55,14 @@ int main(){
     const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
     write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 11);
 
-    while (1) {
+    int st = 1;
+    while (st>0) {
         pUserDir();
         int arguments_count = 0;
-        buf = readLine();
+        buf = readLine(&st);
+        if(st == -1){
+            break;
+        }
         char **program = separate(buf, &arguments_count);
         if(strcmp(
             program[0],"cd")==0)
@@ -115,7 +119,6 @@ int cd(char **args, int arguments_count){
 }
 
 void handler_quit(int signum){
-    fprintf(stdout, "\ntutaj wyswietlic historie polecen\n");
-    pUserDir(); //to sie wykonac nie chce bruh kocham c
+    //fprintf(stdout, "\ntutaj wyswietlic historie polecen\n");
     return;
 }

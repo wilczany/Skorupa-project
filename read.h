@@ -2,5 +2,5 @@
 #define _read_h
    
 char **separate(char *args, int* count);
-char *readLine();
+char *readLine(int *status);
 #endif
