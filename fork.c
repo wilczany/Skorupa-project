@@ -25,7 +25,7 @@ int sProgramForeground(const char* progName, char *const args[]){
         }
 
         else if(chpid > 0){ 
-            wait(NULL); //to czeka na zakonczenie procesu dziecka bodajze 
+            while(wait(NULL) > 0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
             return(0);
         }
 
