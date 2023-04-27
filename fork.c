@@ -1,28 +1,25 @@
-//nazwa robocza, kod z demona lekko zmieniony
-
-//ifguardy trzeba przemyslec jak zrobic
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "fork.h"
 
-//reminder ze przekazane args[] ma zaczynac sie PROGRAMEM i konczyc sie NULLem
-//juz dziala
 int sProgramForeground(const char* progName, char *const args[]){
         pid_t chpid = fork();
         if(chpid < 0){
-            fprintf(stderr, "sProgramBackground, fork(): %s",strerror(errno));
+            fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
             exit(EXIT_FAILURE);
         }
         
         else if(chpid == 0){
             int status = execvp(progName, args);
             if(status == -1){
-                fprintf(stderr, "sProgramBackground, execvp(...): %s\n", strerror(errno));
+                fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
             }
             exit(EXIT_FAILURE);
         }
@@ -44,11 +41,29 @@ int sProgramBackground(const char* progName, char *const args[]){
         }
         
         else if(chpid == 0){
+            int out = dup(STDOUT_FILENO);
+            if(out == -1){
+                fprintf(stderr,"sProgramBackground, dup(): %s",strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+
+            int null = open("/dev/null",O_WRONLY);
+            if(null == -1){
+                fprintf(stderr,"sProgramBackground, open(): %s",strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+
+            int dup2status = dup2(null, STDOUT_FILENO);
+            if(dup2status == -1) {
+                fprintf(stderr,"sProgramBackground, dup2(): %s",strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+
             int status = execvp(progName, args);
             if(status == -1){
                 fprintf(stderr, "sProgramBackground, execvp(...): %s\n", strerror(errno));
+                exit(EXIT_FAILURE);
             }
-            exit(EXIT_FAILURE);
         } 
 
         return(0);

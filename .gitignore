@@ -1,4 +1,9 @@
 *.o
 prog
-.vscode
 main.o
+fork.o
+main.o
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/c_cpp_properties.json
