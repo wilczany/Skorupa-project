@@ -3,11 +3,13 @@
 #include <pwd.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
 #include <unistd.h>
 #include <pwd.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #include "fork.h"
 #include "read.h"
@@ -29,6 +31,11 @@ void pUserDir(){
 	
 }
 
+char *userPath(){ //obsluga bledow
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+}
+
 char *homePath(){ //obsluga bledow
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
@@ -39,17 +46,32 @@ char *homePath(){ //obsluga bledow
 int cd(char **args, int arguments_count);
 
 
-//znak konca pliku (ctrl+d) powoduje segmentation fault gdy wprowadza sie go jako pierszy znak
-//dodatkowo nawet wprowadzony pozniej nie jest obslugiwany jakkolwiek i powoduje ponownie segmentation fault przy dalszym przekazaniu do funkcji
+//znak sigquit (ctrl+\), gdy sie go przekaze do bufora bez dodania zadnych innych znakow (tzn ctrl+\ a nastepnie enter)
 
-//tak samo znak sigquit (ctrl+\), gdy sie go przekaze do bufora bez dodania zadnych innych znakow (tzn ctrl+\ a nastepnie enter)
 int main(){
     __sighandler_t sint, squit, skill;
+    char *cwd[] = {"cd", userPath(), NULL}; 
     if((squit = signal(SIGQUIT, handler_quit)) == SIG_ERR){
     	fprintf(stderr, "signal(SIGQUIT,..) error\n");
     	exit(EXIT_FAILURE);
     }
     
+    //historia poleceń
+    //przejscie do folderu domowego
+    if ((chdir(homePath())) < 0) {
+        fprintf(stderr, "main, chdir(~): %s\n",strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    
+    //otwarcie/stworzenie w nim pliku
+    int hist = open("skorupaHist", O_WRONLY | O_APPEND | O_CREAT, 0777);
+    if (hist < 0){
+        fprintf(stderr, "main, open(history): %s\n",strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    cd(cwd, 2);        
+
     char *buf = malloc(sizeof(char)*MAX_SIZE);
     char** sep;
     const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
@@ -60,6 +82,7 @@ int main(){
         pUserDir();
         int arguments_count = 0;
         buf = readLine(&st);
+        write(hist, buf, MAX_SIZE);
         if(st == -1){
             break;
         }
@@ -67,9 +90,15 @@ int main(){
         if(strcmp(
             program[0],"cd")==0)
             {
-            if(arguments_count == 2 || arguments_count == 3) cd(program, arguments_count);
-            else if(arguments_count == 1) fprintf(stderr, "cd: Zbyt mało argumentów\n");
-            else if(arguments_count > 3) fprintf(stderr,"cd: Zbyt wiele argumentów\n");
+                if(arguments_count == 2 || arguments_count == 3) cd(program, arguments_count);
+                else if(arguments_count == 1) fprintf(stderr, "cd: Zbyt mało argumentów\n");
+                else if(arguments_count > 3) fprintf(stderr,"cd: Zbyt wiele argumentów\n");
+        }
+        else if(strcmp(
+            program[0],"exit")==0)
+            {
+                st = -1;
+                return 0;
         }
         else if(strcmp(
             program[arguments_count-1],
@@ -85,6 +114,7 @@ int main(){
 
         free(buf); //przy wyjsciu z programu
     }
+    close(hist);
     return 0;
 }
 

@@ -54,7 +54,7 @@ int sProgramBackground(const char* progName, char *const args[]){
                 exit(EXIT_FAILURE);
             }
 
-            int dup2status = dup2(null, STDOUT_FILENO);
+            int dup2status = dup2(null, STDERR_FILENO);
             if(dup2status == -1) {
                 fprintf(stderr,"sProgramBackground, dup2(): %s",strerror(errno));
                 exit(EXIT_FAILURE);
