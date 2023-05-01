@@ -27,6 +27,7 @@ int sProgramForeground(const char* progName, char *const args[]){
 
         else if(chpid > 0){ 
             while(wait(NULL) > 0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
+            //nie dziala to w przypadku odpalenia skryptem,,,
             return(0);
         }
 
