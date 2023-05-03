@@ -1,4 +1,4 @@
-#!/home/papryk/studia/Skorupa-project/prog
+#!/home/wilczany/Documents/GitHub/Shell-project/prog
 ls
 cd ~
 ps

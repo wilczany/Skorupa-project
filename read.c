@@ -1,23 +1,36 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 char* readLine(int *status){
     char *buf= malloc(sizeof(char)*512);
     int count= 0;
-    
+    size_t bytes_read; 
+    char c;
+
     for (;;){
-        int c = fgetc (stdin);
-        if(c == -1 && count == 0){
-            buf[count] = 'x';
-            *status = -1;
-            return buf;
+        bytes_read = read(STDIN_FILENO, &c, 1);
+        if (bytes_read == 0 && count == 0){
+            exit(EXIT_SUCCESS);
         }
-        if (c == '\n'){
+        if( c == '\n'){
             buf[count++] = '\0';
             break;
         }
-        buf[count++] = (char)c;
+        buf[count++] = c;
+
+        // int c = fgetc (stdin);
+        // if(c == EOF && count == 0){
+        //     buf[count] = 'x';
+        //     *status = -1;
+        //     return buf;
+        // }
+        // if (c == '\n' || c == EOF){
+        //     buf[count++] = '\0';
+        //     break;
+        // }
+        // buf[count++] = (char)c;
 
     }
     return buf;
@@ -38,3 +51,6 @@ char **separate (char *args, int *count){
     result[(*count)]= 0;
     return result;
     }
+    
+
+    

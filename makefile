@@ -1,11 +1,11 @@
-OBJ = main.o fork.o read.o
+OBJ = main.o fork.o read.o builtin.o
 
 all: prog
 
 prog: $(OBJ)
 	gcc $(OBJ) -o prog
 
-$(OBJ): fork.c
+$(OBJ):fork.h read.h builtin.h
 
 .PHONY: clean
 

@@ -7,8 +7,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include "fork.h"
-
 int sProgramForeground(const char* progName, char *const args[]){
         pid_t chpid = fork();
         if(chpid < 0){
