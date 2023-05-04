@@ -16,7 +16,6 @@ typedef struct pipes_struct{
 
 int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq){
 
-        printf("\n\n\t%i\n\n", p->size);
         pid_t chpid = fork();
         if(chpid < 0){
             fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
@@ -40,11 +39,12 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
                 dup2(p->potoki[3 + (seq * 2)], STDOUT_FILENO);
                 
                 }
-            }
 
             for(int i;i<p->size*2-1; i+=2){
                 close(p->potoki[i]);
                 close(p->potoki[i+1]);
+            }
+
             }
 
             int status = execvp(progName, args);
@@ -129,8 +129,7 @@ void pipes_handler(char **progs, int pipes_count){
          int arguments_count = 0;
          char **program = separate(progs[i+1], &arguments_count, " ");
          
-         //printf("\n\n %i \n\n",pp->potoki[i]);
-        printf("\n\nwykonanie\n\n");
+         
          sProgramForeground(program[0], program, pp, i);
        }
         
