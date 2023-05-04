@@ -132,15 +132,18 @@ int main(int argc, char *argv[]){
                 REDIRECTION = 0; PIPE = 0;
                 continue;
             }
-            // fprintf(stderr,"\n%i linii\n",h_lines);
+
+            fprintf(stderr,"\n%i linii\n",h_lines);
+            
             if(strcmp(buf,"")==0 || strcmp(buf," ")==0) continue;
 
             // fprintf(stderr,"\ncount: %i\n",char_count);
             write(global_hist, buf, char_count);
             write(global_hist, "\n", 1);
-            h_lines++;
+            // h_lines++;
 
-            if(h_lines > 20) truncHistory();
+            if(h_lines >= 22) truncHistory();
+            else{h_lines++;}
 
             char **program = separate(buf, &arguments_count, " ");
 
@@ -209,14 +212,10 @@ int initHistory(){
         bytes_read = read(global_hist, buffer, sizeof(buffer));
         if(strcmp(buffer, "\n")==0) h_lines++;
     }while(bytes_read == sizeof(buffer));
-    h_lines--;
+    if(h_lines==0) h_lines=1;
     return 1;
 }
 
-//Open the file in read-write mode. Define a data buffer. Keep track of your read location and write location. 
-//Read one buffer’s worth of data. Repeat until the end of line marker is in the buffer. Edit the buffer to get rid of the rest of the first line. 
-//Seek to the write pointer. Write the rest. 
-//Seek forward to the read pointer. Read. Seek back to the write pointer. Write. Repeat. Truncate the file at the end. Disadvantage: more complicated.
 int truncHistory(){ 
     size_t bytes_read;
     int nl_pos=0;
@@ -262,19 +261,22 @@ int truncHistory(){
         exit(EXIT_FAILURE);
     }
 
+    char buff[1];
+    int pop=0;
     lseek(tmpFile, 0, SEEK_SET);
     do{
-        bytes_read = read(tmpFile, buffer, sizeof(buffer));
-        write(global_hist, buffer, sizeof(buffer));
-    }while(bytes_read == sizeof(buffer));
+        bytes_read = read(tmpFile, buff, sizeof(buff));
+        if(strcmp(buff,"\n")==0 && pop) {pop=0; continue;}
+        else {write(global_hist, buff, sizeof(buff)); pop=0;}
+        if(strcmp(buff,"\n")==0 && pop==0) {pop=1;}
 
-    initHistory();
+    }while(bytes_read == sizeof(buff));
 
     cd(cwd, 2);        
     free(path);
 
     close(tmpFile);
     
-    h_lines--;
+    initHistory();
     return 1;
 }
