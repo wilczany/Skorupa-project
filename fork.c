@@ -7,6 +7,8 @@
 #include <string.h>
 #include <fcntl.h>
 
+#include "read.h"
+
 int sProgramForeground(const char* progName, char *const args[]){
         pid_t chpid = fork();
         if(chpid < 0){
@@ -68,4 +70,38 @@ int sProgramBackground(const char* progName, char *const args[]){
 
         return(0);
 
+
 }
+
+void pipes_handler(char **progs, int pipes_count){
+    //int* pipes = malloc((count - 1) * 2 * sizeof(int));
+        for(int i = 0; i< pipes_count; i++)
+        printf ("%i", pipes_count);
+    
+        int* fd = malloc(sizeof(fd));
+
+        
+        //int fd[pipes_count-1][2];
+        
+        // for (int i = 0; i < pipes_count ;i += 1) {
+        //     if(pipe(fd[i]) < 0)
+        //         printf("FAILURE");
+        // }
+        // int i = 0;
+        // while(fd[i] != '\0'){
+        //     printf("xd");
+        //     i++;
+        // }
+        // // pętla{
+        // // int counter = 0;
+        // // char **xddd = separate(progs[0],&counter);
+        // // sProgramForeground(xddd[0],xddd,fd);
+        
+        // // }
+        // //sProgramForeground();
+        // for(int i = 0; i< pipes_count-1; i++){
+        //     close(fd[i][0]);
+        //     close(fd[i][1]);
+        // }
+        
+    }

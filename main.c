@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pwd.h>
@@ -24,16 +25,19 @@ const int MAX_SIZE = 512;
 
 void handler_quit(int signum);
 
+void pipes_handler(char **progs, int count);
+
 void pUserDir(){
-    char *cwd = get_current_dir_name();
-    //getcwd(cwd, sizeof(cwd)); //obsluga bledu
-    //write(STDOUT_FILENO, cwd, 2 * sizeof(&cwd));
-    printf(" %s>>", cwd); 
+    char cwd[MAX_SIZE];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        size_t len = strlen(cwd);
+        write(STDOUT_FILENO, cwd, len);
+    }else perror("getcwd() error");
 	
 }
 
 char *userPath(char *path){ //obsluga bledow
-    char cwd[1024];
+    char cwd[MAX_SIZE];
     getcwd(cwd, sizeof(cwd));
     strcpy(path,cwd);
 }
@@ -72,14 +76,14 @@ int main(int argc, char *argv[]){
         // free(args);
         int fd = open(argv[1], O_RDONLY, 0777);
         dup2(fd, STDIN_FILENO);
-
+        //TODO: close this shit
    //     return 0;
     }
 
     //  else{
         __sighandler_t sint, squit, skill;
 
-        char *path = malloc(1024 * sizeof(char));
+        char *path = malloc(MAX_SIZE * sizeof(char));
         userPath(path);
         char *cwd[] = {"cd", path, NULL}; 
         
@@ -113,19 +117,26 @@ int main(int argc, char *argv[]){
         int st = 1;
         while (st>0) {
 
-            // CHWILOWO NIE DZIALA XDD
-            // if(argc == 1){
-            // pUserDir();
-            // }
-        sleep(0);
+            if(argc == 1){
+            pUserDir();
+            }
+
             int arguments_count = 0;
+            int pipe_counter = 0;
             buf = readLine(&st);
+            printf("tu okey");
+            
             //
             // DEBUG XDD
 
             // printf("funkcja: %s\n\n",buf);
             // printf("status:\t%i\n\nWywołanie:\n",st);
-            //
+            //char **programy = seperatePipe(buf, &pipe_counter);
+            //printf("%s",programy[2]);
+            
+            //pipes_handler(programy, pipe_counter);
+            //return 0;
+            //exit(EXIT_SUCCESS);
             //
             write(hist, buf, MAX_SIZE);
             if(st == -1){

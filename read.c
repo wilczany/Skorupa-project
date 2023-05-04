@@ -37,11 +37,11 @@ char* readLine(int *status){
 }
 
 char **separate (char *args, int *count){
-
     char** result = malloc(sizeof(char*));
     char* piece = strtok(args, " ");
     
     while(piece != NULL){
+    
         result = realloc(result, ((*count)+1) * sizeof(char*));
         result[(*count)] = piece;
         piece = strtok(NULL, " ");
@@ -53,4 +53,20 @@ char **separate (char *args, int *count){
     }
     
 
+
+char **seperatePipe(char *args,int *count){
+    char** result = malloc(sizeof(char*));
+    char* piece = strtok(args, "|");
     
+    while(piece != NULL){
+        result = realloc(result, ((*count)+1) * sizeof(char*));
+        result[(*count)] = piece;
+        piece = strtok(NULL, "|");
+        (*count)++;
+        
+    }
+    result[(*count)]= 0;
+
+    return result;
+
+}

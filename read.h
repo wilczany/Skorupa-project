@@ -4,4 +4,6 @@
 char *readLine(int *status);
 
 char **separate(char *args, int* count);
+
+char **seperatePipe(char *args,int *count);
 #endif
