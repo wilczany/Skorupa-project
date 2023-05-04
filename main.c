@@ -131,18 +131,18 @@ int main(int argc, char *argv[]){
 
             // printf("funkcja: %s\n\n",buf);
             // printf("status:\t%i\n\nWywołanie:\n",st);
-            //char **programy = seperatePipe(buf, &pipe_counter);
+            //char **programy = separate(buf, &pipe_counter, "|");
             //printf("%s",programy[2]);
             
             //pipes_handler(programy, pipe_counter);
-            //return 0;
-            //exit(EXIT_SUCCESS);
+
+             //exit(EXIT_SUCCESS);
             //
             write(hist, buf, MAX_SIZE);
             if(st == -1){
                 break;
             }
-            char **program = separate(buf, &arguments_count);
+            char **program = separate(programy[0], &arguments_count, " ");
             if(strcmp(
                 program[0],"cd")==0)
                 {
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]){
                 program[arguments_count-1],
                 "&"))
                 {
-                sProgramForeground(program[0],program);
+                sProgramForeground(program[0],program,NULL,1);
                 
             }
             // else{

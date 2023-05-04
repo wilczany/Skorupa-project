@@ -9,19 +9,43 @@
 
 #include "read.h"
 
-int sProgramForeground(const char* progName, char *const args[]){
+int sProgramForeground(const char* progName, char *const args[], int pipes[2][2], int seq){
+
         pid_t chpid = fork();
         if(chpid < 0){
             fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
             exit(EXIT_FAILURE);
         }
-        
-        else if(chpid == 0){
+            
+         else if(chpid == 0){
+
+            if (pipes != NULL){
+
+                if(seq != 0){
+                 printf("dodano pipe na stdin");
+                dup2(pipes[seq-1][0],STDIN_FILENO);
+                }
+
+                if(pipes[seq + 1] != NULL){
+                printf("dodano pipe na stdout");
+                dup2(pipes[seq][1],STDOUT_FILENO);
+                }
+
+            }
+
+
             int status = execvp(progName, args);
             if(status == -1){
                 fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
                 //nieznane/nieprawidlowe polecenie
             }
+
+            for(int i; pipes[i] != NULL; i++){
+                printf("Xddd");
+                close(pipes[i][0]);
+                close(pipes[i][1]);
+            }
+            printf("KURWA UDALO SIE");
             exit(EXIT_FAILURE);
         }
 
@@ -74,24 +98,25 @@ int sProgramBackground(const char* progName, char *const args[]){
 }
 
 void pipes_handler(char **progs, int pipes_count){
-    //int* pipes = malloc((count - 1) * 2 * sizeof(int));
-        for(int i = 0; i< pipes_count; i++)
-        printf ("%i", pipes_count);
     
-        int* fd = malloc(sizeof(fd));
+        
+    
+        // int* pipes = malloc((pipes_count - 1) * 2 * sizeof(int));
 
         
-        //int fd[pipes_count-1][2];
+        int fd[pipes_count-1][2];
         
-        // for (int i = 0; i < pipes_count ;i += 1) {
-        //     if(pipe(fd[i]) < 0)
-        //         printf("FAILURE");
-        // }
-        // int i = 0;
-        // while(fd[i] != '\0'){
-        //     printf("xd");
-        //     i++;
-        // }
+        for (int i = 0; i < pipes_count ;i += 1) {
+            if(pipe(fd[i]) < 0)
+                printf("FAILURE");
+        }
+        char *prog1[] ={"ls", NULL};
+        char *prog2[] ={"cat", NULL};
+
+        printf("jestem");
+        sProgramForeground(prog1[0],prog1,fd,0);
+        sProgramForeground(prog2[0],prog2,fd,1);
+
         // // pętla{
         // // int counter = 0;
         // // char **xddd = separate(progs[0],&counter);
@@ -99,9 +124,9 @@ void pipes_handler(char **progs, int pipes_count){
         
         // // }
         // //sProgramForeground();
-        // for(int i = 0; i< pipes_count-1; i++){
-        //     close(fd[i][0]);
-        //     close(fd[i][1]);
-        // }
+        for(int i = 0; i< pipes_count-1; i++){
+            close(fd[i][0]);
+            close(fd[i][1]);
+        }
         
     }
