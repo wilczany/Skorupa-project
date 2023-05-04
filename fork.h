@@ -1,7 +1,12 @@
 #ifndef _fork_h
 #define _fork_h
 
-int sProgramForeground(const char* progName, char *const args[], int pipes[][2], int seq);
+typedef struct pipes_struct{
+    int size;
+    int potoki[];
+} P_S;
+
+int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq);
 
 int sProgramBackground(const char* progName, char *const args[]);
 

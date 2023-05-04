@@ -27,8 +27,6 @@ int REDIRECTION = 0;
 
 void handler_quit(int signum);
 
-void pipes_handler(char **progs, int count);
-
 void pUserDir(){
     char cwd[MAX_SIZE];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -73,7 +71,7 @@ int main(int argc, char *argv[]){
         }
         
         //otwarcie/stworzenie w nim pliku
-        global_hist = open("skorupaHist", O_RDWR | O_APPEND | O_CREAT, 0777);
+        global_hist = open("sforkkorupaHist", O_RDWR | O_APPEND | O_CREAT, 0777);
         if (global_hist < 0){
             fprintf(stderr, "initHistory(), open(skorupaHist): %s\n",strerror(errno));
             exit(EXIT_FAILURE);
@@ -105,18 +103,7 @@ int main(int argc, char *argv[]){
             int pipe_counter = 0;
             buf = readLine(&st, &char_count);
             
-            //
-            // DEBUG XDD
-
-            // printf("funkcja: %s\n\n",buf);
-            // printf("status:\t%i\n\nWywołanie:\n",st);
-            //char **program = separate(buf, &pipe_counter, "|");
-            //printf("%s",program[2]);
             
-            //pipes_handler(program, pipe_counter);
-
-             //exit(EXIT_SUCCESS);
-            //
             
             if(st == -1){
                 break;
@@ -132,12 +119,20 @@ int main(int argc, char *argv[]){
                 REDIRECTION = 0; PIPE = 0;
                 continue;
             }
+        
 
-            fprintf(stderr,"\n%i linii\n",h_lines);
+            // if(PIPE){
+            // char **program = separate(buf, &pipe_counter, "|");
+            // if(pipe_counter>1){
+            // pipes_handler(program, pipe_counter);
+
+            // 
+            // }
+            // }
             
             if(strcmp(buf,"")==0 || strcmp(buf," ")==0) continue;
 
-            // fprintf(stderr,"\ncount: %i\n",char_count);
+
             write(global_hist, buf, char_count);
             write(global_hist, "\n", 1);
             // h_lines++;

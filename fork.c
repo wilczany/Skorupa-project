@@ -9,34 +9,43 @@
 
 #include "read.h"
 
-int sProgramForeground(const char* progName, char *const args[], int pipes[2][2], int seq){
+typedef struct pipes_struct{
+    int size;
+    int potoki[];
+} P_S;
 
+int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq){
+
+        printf("\n\n\t%i\n\n", p->size);
         pid_t chpid = fork();
         if(chpid < 0){
             fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
             exit(EXIT_FAILURE);
         }
-        //  else if(chpid){
-        //     if(pipes !=NULL){
-        //         if()
-        //     }
-        //  }   
+         
          else if(chpid == 0){
 
-            if (pipes != NULL){
+            if (p != NULL){
 
-                if(seq != 0){
-                 printf("dodano pipe na stdin");
-                dup2(pipes[seq-1][0],STDIN_FILENO);
+                if(seq == -1){
+                 
+                 dup2(p->potoki[1], STDOUT_FILENO);
+
+                }else if( seq == p->size - 2){
+            
+                dup2(p->potoki[(seq) * 2], STDIN_FILENO);
+
+                }else {
+                dup2(p->potoki[0 + (seq * 2)], STDIN_FILENO);
+                dup2(p->potoki[3 + (seq * 2)], STDOUT_FILENO);
+                
                 }
-
-                if(pipes[seq + 1] != NULL){
-                printf("dodano pipe na stdout");
-                dup2(pipes[seq][1],STDOUT_FILENO);
-                }
-
             }
 
+            for(int i;i<p->size*2-1; i+=2){
+                close(p->potoki[i]);
+                close(p->potoki[i+1]);
+            }
 
             int status = execvp(progName, args);
             if(status == -1){
@@ -45,17 +54,11 @@ int sProgramForeground(const char* progName, char *const args[], int pipes[2][2]
                 //nieznane/nieprawidlowe polecenie
             }
 
-            for(int i; pipes[i] != NULL; i++){
-                printf("Xddd");
-                close(pipes[i][0]);
-                close(pipes[i][1]);
-            }
-            printf("KURWA UDALO SIE");
             exit(EXIT_FAILURE);
         }
 
         else if(chpid > 0){ 
-            while(wait(NULL) > 0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
+            waitpid(chpid, NULL,0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
             //nie dziala to w przypadku odpalenia skryptem,,,
             return(0);
         }
@@ -63,8 +66,7 @@ int sProgramForeground(const char* progName, char *const args[], int pipes[2][2]
         return(-1); //tego returna nie chcemy
 }
 
-//reminder ze przekazane args[] ma zaczynac sie PROGRAMEM i konczyc sie NULLem
-//chyba dziala (y)
+
 int sProgramBackground(const char* progName, char *const args[]){
         pid_t chpid = fork();
         if(chpid < 0){
@@ -106,35 +108,31 @@ int sProgramBackground(const char* progName, char *const args[]){
 }
 
 void pipes_handler(char **progs, int pipes_count){
-    
-        
-    
         // int* pipes = malloc((pipes_count - 1) * 2 * sizeof(int));
 
-        
-        int fd[pipes_count-1][2];
-        
-        for (int i = 0; i < pipes_count ;i += 1) {
-            if(pipe(fd[i]) < 0)
-                printf("FAILURE");
+        P_S *pp = malloc(sizeof(P_S) + pipes_count *2 * sizeof(int));
+        //int *fd = malloc((pipes_count - 1) * 2 * sizeof(int));
+            
+        for (int i = 0; i < (pipes_count-1) * 2 ;i  += 2) {
+            if(pipe(pp->potoki + i) < 0)
+                printf("\n\nFAILURE\n\n");
         }
-        char *prog1[] ={"ls", NULL};
-        char *prog2[] ={"cat", NULL};
 
-        printf("jestem");
-        sProgramForeground(prog1[0],prog1,fd,0);
-        sProgramForeground(prog2[0],prog2,fd,1);
+        pp->size = pipes_count;
+        //int x = sizeof(fd);
+        //printf("%i",x);
 
-        // // pętla{
-        // // int counter = 0;
-        // // char **xddd = separate(progs[0],&counter);
-        // // sProgramForeground(xddd[0],xddd,fd);
+        // char *prog1[] ={"ls", NULL};
+        // char *prog2[] ={"cat", NULL};
+
+       for (int i = -1 ; i < pipes_count-1; i++){
+         int arguments_count = 0;
+         char **program = separate(progs[i+1], &arguments_count, " ");
+         
+         //printf("\n\n %i \n\n",pp->potoki[i]);
+        printf("\n\nwykonanie\n\n");
+         sProgramForeground(program[0], program, pp, i);
+       }
         
-        // // }
-        // //sProgramForeground();
-        for(int i = 0; i< pipes_count-1; i++){
-            close(fd[i][0]);
-            close(fd[i][1]);
-        }
         
     }
