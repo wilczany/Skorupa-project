@@ -1,0 +1,10 @@
+Projekt uruchamiany jest poprzez wywołanie ./prog po uprzednim skompilowaniu go poleceniem make.
+"Skorupa" na starcie wypisuje aktualną lokalizację oraz tworzy plik przechowujący historię poleceń. Pozwala wpisywać ciągiem polecenie w jednej linii. Następnie dokonuje ich separacji i zależnie od użytych znaków (&, |, >>) lub ich braku uruchamia funkcje z odpowiednimi paramterami.
+Wszystkie polecenia uruchamiane są na bazie zmiennej PATH przy pomocy funkcji execvp(). 
+"Skorupa" kończy pracę po wpisaniu polecenia exit lub wpisaniu znaku końca pliku. Dodatkowo obsługuje skrypty wywoływane przy pomocy #!.
+W katalogu domowym, w pliku skorupaHist przechowywana jest historia ostatnich 20 wykonanych poleceń.
+Dodatkowo zaimplementowano własną wersję polecenia cd, która działa z programem przy pomocy funkcji chdir.
+Potoki działają częściowo (blokują program).
+Przekierowania >> nie działają.
+Historia poleceń działa.
+Ampersand rozpoczyna procesy w tle pozwalając na kontynuację pracy w "skorupie".
