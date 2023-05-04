@@ -22,6 +22,8 @@
 
 
 const int MAX_SIZE = 512;
+int PIPE = 0;
+int REDIRECTION = 0;
 
 void handler_quit(int signum);
 
@@ -47,6 +49,7 @@ char *userPath(char *path){ //obsluga bledow
 
 //znak sigquit (ctrl+\), gdy sie go przekaze do bufora bez dodania zadnych innych znakow (tzn ctrl+\ a nastepnie enter) powoduje segmentation fault
 //sProgramBackground dalej powoduje segmentation fault jesli program cokolwiek wypisze, poza tym to nie dziala notabene
+int global_hist;
 
 int main(int argc, char *argv[]){
     fprintf(stderr,"halo zyjesz?");
@@ -54,26 +57,6 @@ int main(int argc, char *argv[]){
     
     //obsluga skryptow
     if(argc > 1){    
-        // fprintf(stderr,"docieramy tu?");
-        // char** args = malloc((argc+1) * sizeof *args);
-        // for(int i = 0; i < argc-1; i++)
-        // {
-        //     args[i] = strdup(argv[i+1]);
-        // }
-        // args[argc] = NULL;
-        // fprintf(stderr,"kupa 1\n");
-        // //if(strcmp(argv[argc-1],"&")==0){
-        // //    sProgramBackground(args[0],args);
-        // //}else{
-        // sProgramBackground(args[0],args);
-        // fprintf(stderr,"kupa 2\n");
-        // //}
-
-        // for(int i = 0; i < argc; i++)
-        // {
-        //     free(args[i]);
-        // }
-        // free(args);
         int fd = open(argv[1], O_RDONLY, 0777);
         dup2(fd, STDIN_FILENO);
         //TODO: close this shit
@@ -81,18 +64,12 @@ int main(int argc, char *argv[]){
     }
 
     //  else{
-        __sighandler_t sint, squit, skill;
+        __sighandler_t squit;
 
         char *path = malloc(MAX_SIZE * sizeof(char));
         userPath(path);
         char *cwd[] = {"cd", path, NULL}; 
         
-        if((squit = signal(SIGQUIT, handler_quit)) == SIG_ERR){
-            fprintf(stderr, "signal(SIGQUIT,..) error\n");
-            exit(EXIT_FAILURE);
-        }
-        
-        //historia poleceń
         //przejscie do folderu domowego
         if ((chdir(homePath())) < 0) {
             fprintf(stderr, "main, chdir(~): %s\n",strerror(errno));
@@ -100,9 +77,14 @@ int main(int argc, char *argv[]){
         }
         
         //otwarcie/stworzenie w nim pliku
-        int hist = open("skorupaHist", O_WRONLY | O_APPEND | O_CREAT, 0777);
-        if (hist < 0){
+        global_hist = open("skorupaHist", O_RDWR | O_APPEND | O_CREAT, 0777);
+        if (global_hist < 0){
             fprintf(stderr, "main, open(history): %s\n",strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
+        if((squit = signal(SIGQUIT, handler_quit)) == SIG_ERR){
+            fprintf(stderr, "signal(SIGQUIT,..) error\n");
             exit(EXIT_FAILURE);
         }
 
@@ -124,7 +106,6 @@ int main(int argc, char *argv[]){
             int arguments_count = 0;
             int pipe_counter = 0;
             buf = readLine(&st);
-            printf("tu okey");
             
             //
             // DEBUG XDD
@@ -138,11 +119,30 @@ int main(int argc, char *argv[]){
 
              //exit(EXIT_SUCCESS);
             //
-            write(hist, buf, MAX_SIZE);
+            write(global_hist, buf, MAX_SIZE);
+            write(global_hist, "\n", 1);
             if(st == -1){
                 break;
             }
+
+            if(st == -1){
+                break;
+            }            
+            
+            if(strchr(buf, '>') != NULL){
+                REDIRECTION = 1;
+            }
+            if(strchr(buf, '|') != NULL){
+                PIPE = 1;
+            }
+            if(REDIRECTION && PIPE){
+                fprintf(stderr, "Nieobsługiwany przypadek\n"); 
+                REDIRECTION = 0; PIPE = 0;
+                continue;
+            }
+
             char **program = separate(programy[0], &arguments_count, " ");
+
             if(strcmp(
                 program[0],"cd")==0)
                 {
@@ -166,14 +166,14 @@ int main(int argc, char *argv[]){
                 sProgramForeground(program[0],program,NULL,1);
                 
             }
-            // else{
-            //     program[arguments_count-1] = '\0';
-            //     sProgramBackground(program[0],program);
-            // }
+            else{
+                program[arguments_count-1] = '\0';
+                sProgramBackground(program[0],program);
+            }
 
             free(buf); //przy wyjsciu z programu
         }
-        close(hist);
+    close(global_hist);
     //}
 
     return 0;
@@ -182,6 +182,22 @@ int main(int argc, char *argv[]){
 
 
 void handler_quit(int signum){
-    //fprintf(stdout, "\ntutaj wyswietlic historie polecen\n");
+    unsigned char buffer[16];
+	size_t offset = 0; 
+	size_t bytes_read;
+    lseek(global_hist, 0, SEEK_SET);
+    write(STDOUT_FILENO, "\n", 1);
+	do{
+		bytes_read = read(global_hist, buffer, sizeof(buffer));
+        write(STDOUT_FILENO, buffer, bytes_read);
+	}while(bytes_read == sizeof(buffer));
+    write(STDOUT_FILENO, "\n", 1);
+    pUserDir();
+
+    __sighandler_t squit;
+    if((squit = signal(SIGQUIT, handler_quit)) == SIG_ERR){
+            fprintf(stderr, "signal(SIGQUIT,..) error\n");
+            exit(EXIT_FAILURE);
+    }
     return;
 }
