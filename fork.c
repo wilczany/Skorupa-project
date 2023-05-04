@@ -16,7 +16,11 @@ int sProgramForeground(const char* progName, char *const args[], int pipes[2][2]
             fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
             exit(EXIT_FAILURE);
         }
-            
+        //  else if(chpid){
+        //     if(pipes !=NULL){
+        //         if()
+        //     }
+        //  }   
          else if(chpid == 0){
 
             if (pipes != NULL){
@@ -36,7 +40,8 @@ int sProgramForeground(const char* progName, char *const args[], int pipes[2][2]
 
             int status = execvp(progName, args);
             if(status == -1){
-                fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
+                if(errno == ENOENT) fprintf(stderr, "Brak takiego polecenia lub ścieżki.\n");
+                else fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
                 //nieznane/nieprawidlowe polecenie
             }
 
@@ -66,7 +71,9 @@ int sProgramBackground(const char* progName, char *const args[]){
             fprintf(stderr, "sProgramBackground, fork(): %s",strerror(errno));
         }
         
-        else if(chpid == 0){
+        if(chpid) fprintf(stderr, "[Uruchomiono proces %i]\n",chpid);
+        
+        if(chpid == 0){
             int out = dup(STDOUT_FILENO);
             if(out == -1){
                 fprintf(stderr,"sProgramBackground, dup(): %s",strerror(errno));
@@ -79,7 +86,7 @@ int sProgramBackground(const char* progName, char *const args[]){
                 exit(EXIT_FAILURE);
             }
 
-            int dup2status = dup2(null, STDERR_FILENO);
+            int dup2status = dup2(null, STDOUT_FILENO);
             if(dup2status == -1) {
                 fprintf(stderr,"sProgramBackground, dup2(): %s",strerror(errno));
                 exit(EXIT_FAILURE);
@@ -87,7 +94,8 @@ int sProgramBackground(const char* progName, char *const args[]){
 
             int status = execvp(progName, args);
             if(status == -1){
-                fprintf(stderr, "sProgramBackground, execvp(...): %s\n", strerror(errno));
+                if(errno == ENOENT) fprintf(stderr, "Brak takiego polecenia lub ścieżki.\n");
+                else fprintf(stderr, "sProgramBackground, execvp(...): %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
             }
         } 

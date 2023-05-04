@@ -8,3 +8,5 @@ main.o
 .vscode/launch.json
 .vscode/c_cpp_properties.json
 temat.txt
+abecadlo.c
+tmp

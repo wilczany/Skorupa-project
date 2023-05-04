@@ -5,7 +5,7 @@
 
 #define MAX_ARGUMENT_COUNT 32
 
-char* readLine(int *status){
+char* readLine(int *status, int *ct){
     char *buf= malloc(sizeof(char)*512);
     int count= 0;
     size_t bytes_read; 
@@ -22,19 +22,8 @@ char* readLine(int *status){
         }
         buf[count++] = c;
 
-        // int c = fgetc (stdin);
-        // if(c == EOF && count == 0){
-        //     buf[count] = 'x';
-        //     *status = -1;
-        //     return buf;
-        // }
-        // if (c == '\n' || c == EOF){
-        //     buf[count++] = '\0';
-        //     break;
-        // }
-        // buf[count++] = (char)c;
-
     }
+    *ct = count;
     return buf;
 }
 
