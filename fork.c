@@ -129,7 +129,7 @@ void pipes_handler(char **progs, int pipes_count){
          int arguments_count = 0;
          char **program = separate(progs[i+1], &arguments_count, " ");
          
-         
+
          sProgramForeground(program[0], program, pp, i);
        }
         

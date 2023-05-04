@@ -54,8 +54,7 @@ int main(int argc, char *argv[]){
     if(argc > 1){    
         int fd = open(argv[1], O_RDONLY, 0777);
         dup2(fd, STDIN_FILENO);
-        //TODO: close this shit
-   //     return 0;
+
     }
     //  else{
         __sighandler_t squit;
@@ -124,8 +123,6 @@ int main(int argc, char *argv[]){
             // char **program = separate(buf, &pipe_counter, "|");
             // if(pipe_counter>1){
             // pipes_handler(program, pipe_counter);
-
-            // 
             // }
             // }
             
@@ -140,6 +137,11 @@ int main(int argc, char *argv[]){
             else{h_lines++;}
 
             char **program = separate(buf, &arguments_count, " ");
+
+            char* temp = malloc(1 * sizeof(char));
+            *temp = program[0][0];
+            if (strcmp(temp, "#") == 0)
+            continue;
 
             if(strcmp(
                 program[0],"cd")==0)
@@ -282,3 +284,4 @@ int truncHistory(){
     initHistory();
     return 1;
 }
+
