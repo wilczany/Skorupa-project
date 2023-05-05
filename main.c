@@ -44,7 +44,6 @@ int main(int argc, char *argv[]){
         dup2(fd, STDIN_FILENO);
 
     }
-    //  else{
         __sighandler_t squit;
 
         char *path = malloc(MAX_SIZE * sizeof(char));
@@ -75,14 +74,13 @@ int main(int argc, char *argv[]){
         cd(cwd, 2);        
         free(path);
         char *buf = malloc(sizeof(char)*MAX_SIZE);
-        char** sep;
 
         const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
         write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 11);
         
         int st = 1;
         while (st>0) {
-
+            
             if(argc == 1){
             pUserDir();
             }
@@ -114,6 +112,8 @@ int main(int argc, char *argv[]){
             char **program = separate(buf, &pipe_counter, "|");
             if(pipe_counter>1){
             pipes_handler(program, pipe_counter);
+            fprintf(stderr,"xddd");
+            continue;
             }
             }
             
@@ -122,6 +122,9 @@ int main(int argc, char *argv[]){
 
             write(global_hist, buf, char_count);
             write(global_hist, "\n", 1);
+            
+
+            //NIE WIEM CO TO JEST I CZEMU BYLO W KOMENTARZU XDD
             // h_lines++;
 
             if(h_lines >= 22) truncHistory();
@@ -164,10 +167,11 @@ int main(int argc, char *argv[]){
 
             free(buf); //przy wyjsciu z programu
         }
+
     close(global_hist);
-    //}
 
     return 0;
+
 }
 
 

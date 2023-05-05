@@ -10,4 +10,4 @@ $(OBJ):fork.h read.h builtin.h history.c
 .PHONY: clean
 
 clean:
-	rm -f *.o prog
+	rm -f *.o prog tmp

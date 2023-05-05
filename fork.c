@@ -48,6 +48,8 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
             }
 
             int status = execvp(progName, args);
+
+
             if(status == -1){
                 if(errno == ENOENT) fprintf(stderr, "Brak takiego polecenia lub ścieżki.\n");
                 else fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
@@ -58,8 +60,13 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
         }
 
         else if(chpid > 0){ 
-            waitpid(chpid, NULL,0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
+            
+             for(int i;i<p->size*2-1; i+=2){
+                close(p->potoki[i]);
+                close(p->potoki[i+1]);
+            }
             //nie dziala to w przypadku odpalenia skryptem,,,
+            waitpid(chpid, NULL,0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
             return(0);
         }
 
@@ -128,10 +135,8 @@ void pipes_handler(char **progs, int pipes_count){
        for (int i = -1 ; i < pipes_count-1; i++){
          int arguments_count = 0;
          char **program = separate(progs[i+1], &arguments_count, " ");
-         
-
          sProgramForeground(program[0], program, pp, i);
+         fprintf(stderr,"XDDDDD");
        }
-        
         
     }
