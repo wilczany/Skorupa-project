@@ -62,6 +62,7 @@ int main(int argc, char *argv[]){
         if (global_hist < 0){
             fprintf(stderr, "initHistory(), open(skorupaHist): %s\n",strerror(errno));
             exit(EXIT_FAILURE);
+
         }
 
         initHistory();
@@ -112,7 +113,8 @@ int main(int argc, char *argv[]){
             char **program = separate(buf, &pipe_counter, "|");
             if(pipe_counter>1){
             pipes_handler(program, pipe_counter);
-            fprintf(stderr,"xddd");
+
+            free(buf);
             continue;
             }
             }

@@ -15,7 +15,8 @@ typedef struct pipes_struct{
 } P_S;
 
 int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq){
-
+    int status = 0;
+    pid_t wpid;
         pid_t chpid = fork();
         if(chpid < 0){
             fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
@@ -31,22 +32,24 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
                  dup2(p->potoki[1], STDOUT_FILENO);
 
                 }else if( seq == p->size - 2){
-            
+                    
                 dup2(p->potoki[(seq) * 2], STDIN_FILENO);
 
                 }else {
+
                 dup2(p->potoki[0 + (seq * 2)], STDIN_FILENO);
                 dup2(p->potoki[3 + (seq * 2)], STDOUT_FILENO);
                 
                 }
+                int x= p->size *2 - 1;
+            
+            // for(int i=0; i < x; i+=2){
 
-            for(int i;i<p->size*2-1; i+=2){
-                close(p->potoki[i]);
-                close(p->potoki[i+1]);
+            //     close(p->potoki[i]);
+            //     close(p->potoki[i+1]);
+            // }
+
             }
-
-            }
-
             int status = execvp(progName, args);
 
 
@@ -54,19 +57,24 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
                 if(errno == ENOENT) fprintf(stderr, "Brak takiego polecenia lub ścieżki.\n");
                 else fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
                 //nieznane/nieprawidlowe polecenie
+                exit(EXIT_FAILURE);
+
             }
 
             exit(EXIT_FAILURE);
         }
 
-        else if(chpid > 0){ 
-            
-             for(int i;i<p->size*2-1; i+=2){
-                close(p->potoki[i]);
-                close(p->potoki[i+1]);
-            }
-            //nie dziala to w przypadku odpalenia skryptem,,,
-            waitpid(chpid, NULL,0); //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
+        if(chpid > 0){ 
+
+            while ((wpid = wait(&status)) > 0);  //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka(chociaz uzywamy tylko jednego) 
+            // if (p != NULL){
+             
+            //               for(int i =0;i<p->size*2-1; i+=2){
+            //     close(p->potoki[i]);
+            //     close(p->potoki[i]);
+            // }
+            // }
+
             return(0);
         }
 
@@ -121,8 +129,9 @@ void pipes_handler(char **progs, int pipes_count){
         //int *fd = malloc((pipes_count - 1) * 2 * sizeof(int));
             
         for (int i = 0; i < (pipes_count-1) * 2 ;i  += 2) {
-            if(pipe(pp->potoki + i) < 0)
-                printf("\n\nFAILURE\n\n");
+            if(pipe(pp->potoki + i) < 0){
+                fprintf(stderr,"\n\nFAILURE\n\n");
+                exit(EXIT_FAILURE);}
         }
 
         pp->size = pipes_count;
@@ -132,11 +141,12 @@ void pipes_handler(char **progs, int pipes_count){
         // char *prog1[] ={"ls", NULL};
         // char *prog2[] ={"cat", NULL};
 
-       for (int i = -1 ; i < pipes_count-1; i++){
+       for (int i = -1 ; i < (pipes_count-1); i++){
+
          int arguments_count = 0;
          char **program = separate(progs[i+1], &arguments_count, " ");
+
          sProgramForeground(program[0], program, pp, i);
-         fprintf(stderr,"XDDDDD");
        }
         
     }
