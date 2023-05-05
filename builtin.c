@@ -13,6 +13,8 @@
 
 #include "builtin.h"
 
+const int MAX_SIZE = 512;
+
 int cd(char **args, int arguments_count){
     char first = args[1][0];
     char sciezka[4096]; //linuksowy limit sciezki to 4095 czy 4096, ale moze to byc leeekki overkill w malym projekcie
@@ -49,4 +51,20 @@ char *homePath(){ //obsluga bledow
     if ((homedir = getenv("HOME")) == NULL) {
         homedir = getpwuid(getuid())->pw_dir;
     }
+}
+
+void pUserDir(){
+    char cwd[MAX_SIZE];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        size_t len = strlen(cwd);
+        write(STDOUT_FILENO, cwd, len);
+        write(STDOUT_FILENO, ">> ", 3);
+    }else perror("getcwd() error");
+	
+}
+
+char *userPath(char *path){ //obsluga bledow
+    char cwd[MAX_SIZE];
+    getcwd(cwd, sizeof(cwd));
+    strcpy(path,cwd);
 }
