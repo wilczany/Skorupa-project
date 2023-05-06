@@ -40,5 +40,14 @@
     "iostream": "c",
     "type_traits": "c",
     "stdlib.h": "c"
-  }
+  },
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/home/wilczany/Documents/GitHub/Shell-project",
+      "binaryPath": "/home/wilczany/Documents/GitHub/Shell-project/prog",
+      "binaryArgs": []
+    }
+  ],
+  "makefile.configurationCachePath": ".",
+  "makefile.dryrunSwitches": []
 }

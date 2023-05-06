@@ -80,6 +80,7 @@ int main(int argc, char *argv[]){
         write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 11);
         
         int st = 1;
+        
         while (st>0) {
             
             if(argc == 1){
