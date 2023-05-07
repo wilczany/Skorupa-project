@@ -9,11 +9,11 @@
 
 #include "read.h"
 
-
 typedef struct pipes_struct{
     int size;
     int potoki[];
 } P_S;
+void przekierowanie_xd(char *prog, char *const args[], P_S *p, char *path);
 
 int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq){
 
@@ -59,11 +59,11 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
 
                 }
 
-            }
-
             for(int i =0;i < (p->size-1)*2; i++){
                 close(p->potoki[i]);
                     }
+            }
+
 
             //uruchamiamy zadany program
             int status = execvp(progName, args);
@@ -149,7 +149,19 @@ int sProgramBackground(const char* progName, char *const args[]){
 
 }
 
-void pipes_handler(char **progs, int pipes_count){
+void pipes_handler(char *buffer){
+        int redirect = 0, pipes_count = 0;
+        char **temp = separate(buffer, &redirect, ">>");
+        if(redirect>2){
+            fprintf(stderr,"Nieobsługiwane więcej niż jedno przekierowanie\n");
+            return;
+        }
+        if(redirect > 1){
+            char *path_out = malloc(sizeof(temp[1]));
+            strcpy(path_out,temp[1]);
+        }
+
+        char **progs = separate( temp[0], &pipes_count, "|");
 
 
         P_S *pp = malloc(sizeof(P_S) + (pipes_count-1) *2 * sizeof(int));
@@ -165,14 +177,62 @@ void pipes_handler(char **progs, int pipes_count){
     
         pp->size = pipes_count;
 
-       for (int i = -1 ; i < (pipes_count-1); i++){
 
-         int arguments_count = 0;
-         char **program = separate(progs[i+1], &arguments_count, " ");
+        if (redirect < 2){
+            for (int i = -1 ; i < (pipes_count-1); i++){
 
-         
-         sProgramForeground(program[0], program, pp, i);
+            int arguments_count = 0;
+            char **program = separate(progs[i+1], &arguments_count, " ");
+
+            sProgramForeground(program[0], program, pp, i);
          
        }
-        
+        }else{
+            
+            int arguments_count = 0;
+
+            for (int i = -1 ; i < (pipes_count-2); i++){
+
+            arguments_count = 0;
+            char **program = separate(progs[i+1], &arguments_count, " ");
+
+            sProgramForeground(program[0], program, pp, i);
+        }
+        arguments_count = 0;
+        char **program = separate(progs[pipes_count-2], &arguments_count, " ");
+            fprintf(stderr,"XDDDDNOJASNYCHUJMNIESTRZELI");
+        przekierowanie_xd(program[0],program, pp, temp[2]);
     }
+}
+
+void przekierowanie_xd(char *prog, char *const args[], P_S *p, char *path){
+
+    pid_t chpid = fork();
+
+        // obsluga bledow
+        if(chpid < 0){
+            fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
+         // jezeli jest to proces potomny
+         else if(chpid == 0){
+
+            dup2(p->potoki[ (p->size-2) *2 ], STDIN_FILENO);
+            int fd = open(path, O_CREAT | O_WRONLY | O_APPEND, 0666);
+            dup2(fd, STDOUT_FILENO);
+            for(int i =0;i < (p->size-1)*2; i++)
+                close(p->potoki[i]);
+         }
+
+         else if(chpid > 0){
+
+            for(int i =0;i < (p->size-1)*2; i++)
+                close(p->potoki[i]);
+                    
+                int status = 0;    
+                pid_t wpid;
+
+            while ((wpid = wait(&status)) > 0);
+         }
+}
