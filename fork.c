@@ -152,12 +152,13 @@ int sProgramBackground(const char* progName, char *const args[]){
 void pipes_handler(char *buffer){
         int redirect = 0, pipes_count = 0;
         char **temp = separate(buffer, &redirect, ">>");
+        char *path_out;
         if(redirect>2){
             fprintf(stderr,"Nieobsługiwane więcej niż jedno przekierowanie\n");
             return;
         }
         if(redirect > 1){
-            char *path_out = malloc(sizeof(temp[1]));
+            path_out = malloc(sizeof(temp[1]));
             strcpy(path_out,temp[1]);
         }
 
@@ -187,7 +188,7 @@ void pipes_handler(char *buffer){
             sProgramForeground(program[0], program, pp, i);
          
        }
-        }else{
+        }else if(redirect >1 && pipes_count > 1){
             
             int arguments_count = 0;
 
@@ -199,16 +200,21 @@ void pipes_handler(char *buffer){
             sProgramForeground(program[0], program, pp, i);
         }
         arguments_count = 0;
-        char **program = separate(progs[pipes_count-2], &arguments_count, " ");
-            fprintf(stderr,"XDDDDNOJASNYCHUJMNIESTRZELI");
-        przekierowanie_xd(program[0],program, pp, temp[2]);
+        char **program = separate(progs[pipes_count-1], &arguments_count, " ");
+            
+        przekierowanie_xd(program[0],program, pp, path_out);
+    }else if (redirect > 1 && pipes_count ==1){
+        int arguments_count = 0;
+        char **program = separate(progs[pipes_count-1], &arguments_count, " ");
+
+        przekierowanie_xd(program[0],program,NULL,path_out);
+        fprintf(stderr,"NOCOKURWAZNOWU");
     }
 }
 
 void przekierowanie_xd(char *prog, char *const args[], P_S *p, char *path){
 
     pid_t chpid = fork();
-
         // obsluga bledow
         if(chpid < 0){
             fprintf(stderr, "sProgramForeground, fork(): %s",strerror(errno));
@@ -217,22 +223,39 @@ void przekierowanie_xd(char *prog, char *const args[], P_S *p, char *path){
 
          // jezeli jest to proces potomny
          else if(chpid == 0){
-
-            dup2(p->potoki[ (p->size-2) *2 ], STDIN_FILENO);
-            int fd = open(path, O_CREAT | O_WRONLY | O_APPEND, 0666);
+            int fd = open(path, O_CREAT | O_WRONLY | O_APPEND, 0666);    
             dup2(fd, STDOUT_FILENO);
+            if(p != NULL){
+                
+            dup2(p->potoki[ (p->size-2) *2 ], STDIN_FILENO);
+           
             for(int i =0;i < (p->size-1)*2; i++)
                 close(p->potoki[i]);
+            }
+
+            int status = execvp(prog, args);
+
+
+            if(status == -1){
+                if(errno == ENOENT) fprintf(stderr, "Brak takiego polecenia lub ścieżki.\n");
+                else fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
+                //nieznane/nieprawidlowe polecenie
+                exit(EXIT_FAILURE);
+
+            }
+
+            exit(EXIT_FAILURE);
+
+                
          }
-
+            
          else if(chpid > 0){
-
+            if(p != NULL){
             for(int i =0;i < (p->size-1)*2; i++)
-                close(p->potoki[i]);
-                    
+                close(p->potoki[i]);  
+                }
                 int status = 0;    
                 pid_t wpid;
-
             while ((wpid = wait(&status)) > 0);
          }
 }
