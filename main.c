@@ -21,14 +21,9 @@
 #include <unistd.h>
 #include <string.h>
 
-int PIPE = 0;
-
-int REDIRECTION = 0;
+int SCRIPT = 0;
 
 void handler_quit(int signum);
-
-// znak sigquit (ctrl+\), gdy sie go przekaze do bufora bez dodania zadnych innych znakow (tzn ctrl+\ a nastepnie enter) powoduje segmentation fault
-// sProgramBackground dalej powoduje segmentation fault jesli program cokolwiek wypisze, poza tym to nie dziala notabene
 
 int main(int argc, char *argv[])
 {
@@ -52,7 +47,7 @@ int main(int argc, char *argv[])
     }
 
     // otwarcie/stworzenie w nim pliku
-    global_hist = open("sforkkorupaHist", O_RDWR | O_APPEND | O_CREAT, 0777);
+    global_hist = open("skorupaHist", O_RDWR | O_APPEND | O_CREAT, 0777);
 
     if (global_hist < 0)
     {
@@ -90,23 +85,12 @@ int main(int argc, char *argv[])
         int pipe_counter = 0;
 
         buf = readLine(&st, &char_count);
+        if (strchr(buf, '#') != NULL && strchr(buf, '!') != NULL) SCRIPT = 1;
 
         if (st == -1)
         {
             break;
         }
-
-        // if(strchr(buf, '>') != NULL){
-        //     REDIRECTION = 1;
-        // }
-        // if(strchr(buf, '|') != NULL){
-        //     PIPE = 1;
-        // }
-        // if(REDIRECTION && PIPE){
-        //     fprintf(stderr, "Nieobsługiwany przypadek\n");
-        //     REDIRECTION = 0; PIPE = 0;
-        //     continue;
-        // }
 
         if (strchr(buf, '>') != NULL ||
             strchr(buf, '|') != NULL)
@@ -121,18 +105,13 @@ int main(int argc, char *argv[])
         if (strcmp(buf, "") == 0 || strcmp(buf, " ") == 0)
             continue;
 
-        write(global_hist, buf, char_count);
-        write(global_hist, "\n", 1);
-
-        // NIE WIEM CO TO JEST I CZEMU BYLO W KOMENTARZU XDD
-        //  h_lines++;
-
-        if (h_lines >= 22)
-            truncHistory();
-        else
-        {
+        if(!SCRIPT){
+            write(global_hist, buf, char_count);
+            write(global_hist, "\n", 1);
             h_lines++;
         }
+
+        if (h_lines >= 22) truncHistory();
 
         char **program = separate(buf, &arguments_count, " ");
 

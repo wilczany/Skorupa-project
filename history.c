@@ -19,6 +19,8 @@ int initHistory(){
         if(strcmp(buffer, "\n")==0) h_lines++;
     }while(bytes_read == sizeof(buffer));
     if(h_lines==0) h_lines=1;
+
+    if(h_lines>21) truncHistory();
     return 1;
 }
 
@@ -34,15 +36,9 @@ int truncHistory(){
         bytes_read = read(global_hist, buffer, sizeof(buffer));
         nl_pos++;
         if((nl = strchr(buffer,'\n')) != NULL){
-            //
-            //fprintf(stderr,"\nznalezione: %i\n", nl_pos);
-            //
             break;
 
         }
-        //
-        //write(STDOUT_FILENO, buffer, sizeof(buffer));
-        //
     }while(bytes_read == sizeof(buffer));
 
     //przepisanie pliku od drugiej linii
@@ -60,18 +56,12 @@ int truncHistory(){
         
     //przejscie do folderu domowego
     if ((chdir(homePath())) < 0) {
-        //
-        //fprintf(stderr, "main, chdir(~): %s\n",strerror(errno));
-        //
         exit(EXIT_FAILURE);
     }
         
     //otwarcie/stworzenie w nim pliku
     global_hist = open("skorupaHist", O_RDWR | O_TRUNC | O_CREAT, 0777);
     if (global_hist < 0){
-        //
-        //fprintf(stderr, "truncHistory(), open(skorupaHist): %s\n",strerror(errno));
-        //
         exit(EXIT_FAILURE);
     }
 
@@ -90,8 +80,9 @@ int truncHistory(){
     free(path);
 
     close(tmpFile);
-    
+    h_lines--;
     initHistory();
+
     return 1;
 
 
