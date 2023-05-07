@@ -40,25 +40,28 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
                 // tutaj odbywa sie laczenie potokow oraz zamykanie nieuzywanych polaczen
                 // zmienna pomocnicza seq odpowiada za kolejnośc łączenia potoków z procesami, liczenie zaczynamy od -1
                 if(seq == -1){
-                
+                // pierwszy proces w kolejce
+                // przekierowuje standardowe wyjście do pierwszego potoku
                 dup2(p->potoki[1], STDOUT_FILENO);
-               
+
 
                 }else if( seq == p->size - 2){
-                    
-                dup2(p->potoki[(seq) * 2], STDIN_FILENO);
-               
+                
+                //ostatni proces
+                // łączy potok ze standardowym wejściem
+                dup2(p->potoki[(seq) * 2], STDIN_FILENO); 
+                
                     
 
                 }else {
+                // obsluguje wszyskie procesy, poza pierwszym i ostatnim
+                // łączenie wejścia z n potokiem, oraz wyjścia z n+1 potokiem
                 dup2(p->potoki[0 + (seq * 2)], STDIN_FILENO);
                 dup2(p->potoki[3 + (seq * 2)], STDOUT_FILENO);
-                
-               
-
 
                 }
 
+            // zamkam wszystkie kopie potoków po przydzieleniu
             for(int i =0;i < (p->size-1)*2; i++){
                 close(p->potoki[i]);
                     }
@@ -71,8 +74,7 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
 
             if(status == -1){
                 if(errno == ENOENT) fprintf(stderr, "Brak takiego polecenia lub ścieżki.\n");
-                else fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno));
-                //nieznane/nieprawidlowe polecenie
+                else fprintf(stderr, "sProgramForeground, execvp(...): %s\n", strerror(errno)); //nieznane/nieprawidlowe polecenie
                 exit(EXIT_FAILURE);
 
             }
@@ -83,10 +85,11 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
         // jezeli jest to proces rodzica
         if(chpid > 0){ 
 
-                // jezeli zostaly uzyte potoki
-
+                
+                // jezeli zostaly uzyte potokim, oraz jest to ostatnie wywołanie pętli
             if (p != NULL && seq == p->size - 2){
 
+                // zamykamy wszystkie kopie potoków w procesie rodzica
                 for(int i =0;i < (p->size-1)*2; i++){
                 close(p->potoki[i]);
                     }
@@ -95,13 +98,16 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
             while ((wpid = wait(&status)) > 0);  //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka
             
             
-
+                
             }else if (p != NULL && seq < p->size - 2){
-            
-
-        }else waitpid (chpid, NULL, 0);
+                // nie jest to ostatnie wywołanie pętli, więc wracamy
             return(0);
-        
+
+        }else {
+            //wywołanie funkcji bez potoków
+            waitpid (chpid, NULL, 0);
+            return(0);
+        }
         
         }
 
@@ -209,6 +215,7 @@ void pipes_handler(char *buffer){
 
         sRedirectProgram(program[0],program,NULL,trim(path_out));
     }
+    free(pp);
 }
 
 void sRedirectProgram(char *prog, char *const args[], P_S *p, char *path){
