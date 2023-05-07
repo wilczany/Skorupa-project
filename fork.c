@@ -13,7 +13,7 @@ typedef struct pipes_struct{
     int size;
     int potoki[];
 } P_S;
-void przekierowanie_xd(char *prog, char *const args[], P_S *p, char *path);
+void sRedirectProgram(char *prog, char *const args[], P_S *p, char *path);
 
 int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq){
 
@@ -202,16 +202,16 @@ void pipes_handler(char *buffer){
         arguments_count = 0;
         char **program = separate(progs[pipes_count-1], &arguments_count, " ");
             
-        przekierowanie_xd(program[0],program, pp, trim(path_out));
+        sRedirectProgram(program[0],program, pp, trim(path_out));
     }else if (redirect > 1 && pipes_count ==1){
         int arguments_count = 0;
         char **program = separate(progs[pipes_count-1], &arguments_count, " ");
 
-        przekierowanie_xd(program[0],program,NULL,trim(path_out));
+        sRedirectProgram(program[0],program,NULL,trim(path_out));
     }
 }
 
-void przekierowanie_xd(char *prog, char *const args[], P_S *p, char *path){
+void sRedirectProgram(char *prog, char *const args[], P_S *p, char *path){
 
     pid_t chpid = fork();
         // obsluga bledow
