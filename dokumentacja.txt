@@ -4,7 +4,7 @@ Wszystkie polecenia uruchamiane są na bazie zmiennej PATH przy pomocy funkcji e
 "Skorupa" kończy pracę po wpisaniu polecenia exit lub wpisaniu znaku końca pliku. Dodatkowo obsługuje skrypty wywoływane przy pomocy #!.
 W katalogu domowym, w pliku skorupaHist przechowywana jest historia ostatnich 20 wykonanych poleceń.
 Dodatkowo zaimplementowano własną wersję polecenia cd, która działa z programem przy pomocy funkcji chdir.
-Potoki działają częściowo (blokują program).
-Przekierowania >> nie działają.
+Potoki | działają. 
+Przekierowania >> działają poprzez dopisanie przekazanego tekstu do pliku oraz dodanie znaku nowej linii.
 Historia poleceń działa.
 Ampersand rozpoczyna procesy w tle pozwalając na kontynuację pracy w "skorupie".

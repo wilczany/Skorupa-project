@@ -4,4 +4,6 @@
 char *readLine(int *status, int *ct);
 
 char **separate(char *args, int* count, char *delim);
+
+char *trim(char *toTrim); 
 #endif

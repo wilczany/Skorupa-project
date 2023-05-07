@@ -207,8 +207,7 @@ void pipes_handler(char *buffer){
         int arguments_count = 0;
         char **program = separate(progs[pipes_count-1], &arguments_count, " ");
 
-        przekierowanie_xd(program[0],program,NULL,path_out);
-        fprintf(stderr,"NOCOKURWAZNOWU");
+        przekierowanie_xd(program[0],program,NULL,trim(path_out));
     }
 }
 

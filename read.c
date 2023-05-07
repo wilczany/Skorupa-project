@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #define MAX_ARGUMENT_COUNT 32
 
@@ -42,3 +43,12 @@ char **separate (char *args, int *count, char *delim){
     result[(*count)]= NULL;
     return result;
     }
+
+char *trim(char *toTrim) {
+    int length = strlen(toTrim);
+
+    while(isspace(toTrim[length - 1])) --length;
+    while(*toTrim && isspace(*toTrim)) ++toTrim, --length;
+
+    return strndup(toTrim, length);
+}
