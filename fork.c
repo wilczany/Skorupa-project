@@ -42,46 +42,28 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
                 if(seq == -1){
                 
                 dup2(p->potoki[1], STDOUT_FILENO);
-                close(p->potoki[0]);
-
-                for(int i=2; i < p->size *2; i+=1){
-                        
-                close(p->potoki[i]);
-
-                    }
+               
 
                 }else if( seq == p->size - 2){
-
+                    
                 dup2(p->potoki[(seq) * 2], STDIN_FILENO);
-                close(p->potoki[(seq*2)+1]);
-
-                for(int i=0; i < seq*2; i+=1){
-        
-                close(p->potoki[i]);
-
-                }
+               
+                    
 
                 }else {
-
                 dup2(p->potoki[0 + (seq * 2)], STDIN_FILENO);
                 dup2(p->potoki[3 + (seq * 2)], STDOUT_FILENO);
                 
-                for(int i=0; i < p->size+2; i+=1){
-                    if( 
-                        (i==seq*2)
-                        ||
-                        (i==(seq*2)+3)
-                    )
-                        continue;
-                close(p->potoki[i]);
-
-                }
+               
 
 
                 }
 
             }
 
+            for(int i =0;i < (p->size-1)*2; i++){
+                close(p->potoki[i]);
+                    }
 
             //uruchamiamy zadany program
             int status = execvp(progName, args);
@@ -103,24 +85,24 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
 
                 // jezeli zostaly uzyte potoki
 
-            if (p != NULL){
-                // zamykamy ostatni potok aby zakonczyc proces, który caly czas oczekuje na input
-                close( p->potoki  [ ( p->size*2 ) -3 ] );
-            }
+            if (p != NULL && seq == p->size - 2){
+
+                for(int i =0;i < (p->size-1)*2; i++){
+                close(p->potoki[i]);
+                    }
 
             pid_t wpid;
-            
             while ((wpid = wait(&status)) > 0);  //czeka na zakonczenie procesu dziecka, a nawet wielu procesow dziecka
             
-                //TODO: Ogarnąć to zamykanie 
-            //     if (p != NULL){
-                
-            //     // zamykamy resztę 
-            //     for(int i =0;i < (p->size-1)*2; i){
-            //     close(p->potoki[i]);
-            // }
-            //     }
+            
+
+            }else if (p != NULL && seq < p->size - 2){
+            
+
+        }else waitpid (chpid, NULL, 0);
             return(0);
+        
+        
         }
 
         return(-1); //tego returna nie chcemy
