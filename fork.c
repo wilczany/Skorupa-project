@@ -110,8 +110,6 @@ int sProgramForeground(const char* progName, char *const args[], P_S *p, int seq
         }
         
         }
-
-        return(-1); //tego returna nie chcemy
 }
 
 
